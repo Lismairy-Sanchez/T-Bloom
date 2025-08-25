@@ -10,7 +10,7 @@ export const ClienteProvider = ({ children }) => {
     const [cargandoPerfil, setCargandoPerfil] = useState(false);
 
     const navigate = useNavigate();
-
+    console.log(clienteId);
     const BASE_URL =import.meta.env.VITE_API_URL;
 
     // Backend -> Form de Perfil
@@ -22,10 +22,11 @@ export const ClienteProvider = ({ children }) => {
         fechaNacimiento: (c?.FechaNacimiento ?? c?.fechaNacimiento ?? "").slice(0, 10),
         email:           c?.Email ?? c?.email ?? "",
         phone:           c?.Telefono ?? c?.phone ?? "",
+        rol: c?.rol ?? c?.rol?? "",
         };
     };
 
- // Form de Perfil -> Backend 
+        //Form de Perfil -> Backend 
     const mapFormToBackend = (form) => {
         return {
             Nombre:          form.name,
@@ -37,28 +38,19 @@ export const ClienteProvider = ({ children }) => {
         };
         };
 
-    // const normalizarNivel = (raw) => {
-    //     const nivel =
-    //     raw?.cliente?.Nivel?.Nombre ??
-    //     raw?.nivel ??
-    //     raw?.Nivel?.Nombre ??
-    //     null;
+    const normalizarNivel = (raw) => {
+        const nivel =
+            raw?.cliente?.Nivel?.Nombre ??
+            raw?.nivel ??
+            raw?.Nivel?.Nombre ??
+            null;
 
-    //     if (!nivel || typeof nivel !== "string") return "Light";
-    //     return nivel.charAt(0).toUpperCase() + nivel.slice(1).toLowerCase();
-    // };
-
-
-    const fetchWithAuth = async (url, options = {}) => {
-        const token = localStorage.getItem("tokenCliente");
-        const headers = {
-        ...(options.headers || {}),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        };
-        return fetch(url, { credentials: "include", ...options, headers });
+            if (!nivel || typeof nivel !== "string") return "Light";
+            return nivel.charAt(0).toUpperCase() + nivel.slice(1).toLowerCase();
     };
 
-    // Obtener perfil
+
+    // Obtener Datos perfil
     useEffect(() => {
         const obtenerDatosCliente = async () => {
         if (!clienteId) return;
@@ -73,11 +65,7 @@ export const ClienteProvider = ({ children }) => {
             // Nivel (normalizado)
             setNivelCliente(normalizarNivel(data));
 
-            // setDatosCliente(data);
-            // if (data.cliente.Nivel) {
-            // const nivelNormalizado = data.cliente.Nivel.Nombre.charAt(0).toUpperCase() + data.cliente.Nivel.Nombre.slice(1).toLowerCase();
-            // setNivelCliente(nivelNormalizado);
-            // }
+            setNivelCliente(normalizarNivel(data));
         } catch (error) {
             console.error("Error al obtener datos del cliente:", error);
         } finally {
@@ -87,21 +75,14 @@ export const ClienteProvider = ({ children }) => {
         obtenerDatosCliente();
     }, [clienteId]);
 
-    // Guardar perfil
-    const guardarPerfilCliente = async (formDataObj, fotoFile) => {
-        if (!clienteId) throw new Error("Cliente no definido.");
-
-        const payload = mapFormToBackend(formDataObj || {});
-
-        const body = new FormData();
-        Object.entries(payload || {}).forEach(([k, v]) => {
-        if (v !== undefined && v !== null) body.append(k, v);
-        });
-        if (fotoFile) body.append("foto", fotoFile);
-
-        const res = await fetchWithAuth(`${BASE_URL}/cliente/${clienteId}`, {
+    // Actualizar datos perfil
+    const guardarPerfilCliente = async (formDataObj) => {
+        if (!clienteId) throw new Error("Cliente no definido.");       
+       
+        const res = await fetch(`${BASE_URL}/cliente/${clienteId}`, {
+        headers: { "Content-Type": "application/json" },
         method: "PUT",
-        body,
+        body: JSON.stringify(mapFormToBackend(formDataObj)),
         });
 
         if (!res.ok) {
@@ -118,12 +99,7 @@ export const ClienteProvider = ({ children }) => {
         setNivelCliente(normalizarNivel(actualizado));
 
         // setDatosCliente(actualizado);
-
-        // if (actualizado?.nivel) {
-        // const nivelNormalizado = actualizado.nivel.charAt(0).toUpperCase() + actualizado.nivel.slice(1).toLowerCase();
-        // setNivelCliente(nivelNormalizado);
-        // }
-
+        setNivelCliente(normalizarNivel(actualizado));
         return actualizado;
     };
 

@@ -97,7 +97,8 @@ export default function PerfilCliente() {
         }
 
         try {
-        await guardarPerfilCliente(formData, fotoPerfil);
+        await guardarPerfilCliente(formData);
+        console.log("Guardado", guardarPerfilCliente)
         alert("Perfil actualizado correctamente.");
         setEditSection(null);
         } catch (error) {
@@ -177,9 +178,6 @@ return (
 
         {editSection && (
             <div className={formStyles.inputButtonContainer}>
-            <Button type="submit" variant="save" className="btnSave">
-                guardar
-            </Button>
             <Button
                 type="button"
                 variant="cancel"
@@ -187,6 +185,9 @@ return (
                 onClick={() => setEditSection(null)}
             >
                 cancelar
+            </Button>
+            <Button type="submit" variant="save" className="btnSave">
+                guardar
             </Button>
             </div>
         )}
@@ -199,6 +200,14 @@ return (
                 <img src={chevron} alt="" />
             </Link>
             </div>
+            <button
+            type="button"
+            className={formStyles.deleteButtons}
+            onClick={handleEliminarCuenta}
+            >
+            <p className={formStyles.deleteSession}>Eliminar cuenta</p>
+            <img src={chevron} alt="" />
+            </button>
 
             <div className={formStyles.buttons}>
             <h3>Locales</h3>
@@ -214,15 +223,6 @@ return (
             // onClick={handleLogout}
             >
             <p className={formStyles.closeSession}>Cerrar sesión</p>
-            <img src={chevron} alt="" />
-            </button>
-
-            <button
-            type="button"
-            className={formStyles.deleteButtons}
-            onClick={handleEliminarCuenta}
-            >
-            <p className={formStyles.deleteSession}>Eliminar cuenta</p>
             <img src={chevron} alt="" />
             </button>
         </section>
